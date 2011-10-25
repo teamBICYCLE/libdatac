@@ -5,13 +5,13 @@
 ** Login   <jonathan.machado@epitech.net>
 **
 ** Started on  Mon Oct 24 10:18:44 2011 Jonathan Machado
-** Last update Tue Oct 25 16:10:01 2011 Jonathan Machado
+** Last update Tue Oct 25 17:15:51 2011 Jonathan Machado
 */
 
 #include <stdlib.h>
 #include "link.h"
 
-Link	new_link(void)
+Link		*new_link(void)
 {
   Link		*new = NULL;
 
@@ -20,7 +20,7 @@ Link	new_link(void)
   return (new);
 }
 
-Link		new_link_by_copy(Link *link)
+Link		*new_link_by_copy(Link *link)
 {
   Link		*new = NULL;
 
@@ -34,7 +34,7 @@ Link		new_link_by_copy(Link *link)
   return (new);
 }
 
-Link		new_link_by_param(void *ptr)
+Link		*new_link_by_param(void *ptr)
 {
   Link		*new = NULL;
 

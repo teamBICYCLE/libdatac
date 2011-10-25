@@ -5,7 +5,7 @@
 ** Login   <jonathan.machado@epitech.net>
 **
 ** Started on  Mon Oct 24 10:06:47 2011 Jonathan Machado
-** Last update Tue Oct 25 16:09:38 2011 Jonathan Machado
+** Last update Tue Oct 25 16:55:22 2011 Jonathan Machado
 */
 
 #ifndef __LIST_H__
