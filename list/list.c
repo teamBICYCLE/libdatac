@@ -5,7 +5,7 @@
 ** Login   <jonathan.machado@epitech.net>
 **
 ** Started on  Mon Oct 24 14:47:22 2011 Jonathan Machado
-** Last update Tue Oct 25 16:10:02 2011 Jonathan Machado
+** Last update Wed Oct 26 14:45:07 2011 Jonathan Machado
 */
 
 #include <stdlib.h>
@@ -84,7 +84,7 @@ Link	*pop_end(List *list)
 
 Link	*pop_at(List *list, unsigned int pos)
 {
-  int	i;
+  unsigned int	i;
   Link	*ret = NULL;
 
   if (list != NULL) {
@@ -151,7 +151,7 @@ void	push_end(List *list, Link *new)
 
 void	push_at(List *list, Link *new, unsigned int pos)
 {
-  int	i;
+  unsigned int	i;
 
   if (list != NULL) {
     if (new != NULL) {
@@ -174,6 +174,27 @@ void	push_at(List *list, Link *new, unsigned int pos)
   }
 }
 
+Link	*get_link(List *list, unsigned int pos)
+{
+  unsigned int	i;
+  Link	*ret = NULL;
+
+  if (list != NULL) {
+    if (new != NULL) {
+      if (list->size > pos) {
+	if (pos == 0)
+	  ret = list->head;
+	else if (pos == list->size - 1)
+	  ret = list->tail;
+	else
+	  for (i = 0, ret = list->head; i < pos;
+	       i++, ret = ret->next);
+      }
+    }
+  }
+  return (ret);
+}
+
 int	is_in_list(List *list, void *ptr)
 {
   Link	*cur = NULL;
@@ -187,13 +208,13 @@ int	is_in_list(List *list, void *ptr)
   return (0);
 }
 
-void	revert(List *list)
+List	*revert(List *list)
 {
   Link	*cur = NULL;
   Link	*tmp = NULL;
 
   if (list != NULL) {
-    for (cur = list->head; cur != NULL || cur != list->tail->next;
+    for (cur = list->head; cur != NULL && tmp != list->head;
 	 cur = temp) {
       tmp = cur->next;
       cur->next = cur->prev;
@@ -203,25 +224,40 @@ void	revert(List *list)
     list->head = list->tail;
     list->tail = tmp;
   }
+  return (list);
 }
 
-void	sort(List *list, int (*f)(void *, void *))
+List	*sort(List *list, int (*f)(void *, void *))
 {
+  List	*list2 = NULL;
 
+  if (list != NULL) {
+    if (list->size > 1) {
+      list2 = new_list();
+      split(list, list2, (list->size / 2));
+      sort(list);
+      sort(list2);
+      merge(list, list2, f);
+      free(list2);
+      list2 = NULL;
+    }
+  }
+  return (list);
 }
 
-void	iterate(List *list, void (*f)(void *))
+List	*iterate(List *list, void (*f)(void *))
 {
   Link	*cur = NULL;
 
   if (list != NULL) {
-  for_each(cur, list) {
+    for_each(cur, list) {
       f(cur->ptr);
     }
   }
+  return (list);
 }
 
-void	circular(List *list)
+List	*circular(List *list)
 {
   if (list != NULL) {
     if (list->tail->next && list->head->prev) {
@@ -232,81 +268,100 @@ void	circular(List *list)
       list->head->prev = NULL;
     }
   }
+  return (list);
 }
 
-void	concat(List *list1, List *list2)
+List	*concat(List *list1, List *list2)
 {
+  Link	*cur = NULL;
 
+  if (list1 != NULL && list2 != NULL) {
+    for_each(cur, list2) {
+      push_end(list1, cur);
+    }
+  }
+  return (list);
 }
 
-void	unique(List *list)
+List	*split(List *list, List *new, int pos)
 {
+  Link	*new_head = NULL;
+  Link	*new_tail = NULL;
 
+  if (list != NULL && new != NULL) {
+    if (pos < list->size) {
+      if (pos == 0) {
+	new->head = list->head;
+	new->tail = list->tail;
+	new->size = list->size;
+	list->head = NULL;
+	list->tail = NULL;
+	list->size = 0;
+      } else {
+	new_head = get_link(list, pos);
+	new_tail = new_head->prev;
+	new_head->prev = list->head->prev;
+	new_tail->next = list->tail->next;
+	if (list->tail->next != NULL) {
+	  list->tail->next = new_head;
+	  list->head->prev = new_tail;
+	}
+	new->head = new_head;
+	new->tail = list->tail;
+	list->tail = new_tail;
+      }
+    }
+  }
+  return (list);
 }
 
-List	*revert_copy(List *list)
+List	*merge(List *list1, List *list2, int (*f)(void *, void *))
 {
-  List	*new;
+  List	*sorted = NULL;
 
-  new = new_list_by_copy(list);
-  revert(new);
-  return (new);
+  if (list1 != NULL && list2 != NULL) {
+    sorted = new_list();
+    while (list1->size > 0 || list2->size > 0) {
+      if (list1->size > 0 && list2->size > 0)  {
+	if (f(list1->head->ptr, list2->head->ptr) <= 0)
+	  push_end(sorted, pop_front(list1));
+	else
+	  push_end(sorted, pop_front(list2));
+      } else if (list1->size > 0) {
+	push_end(sorted, pop_front(list1));
+      } else if (list2->size > 0) {
+	push_end(sorted, pop_front(list2));
+      }
+    }
+    list1->head = sorted->head;
+    list1->tail = sorted->tail;
+    list1->size = sorted->size;
+    free(sorted);
+    sorted = NULL;
+  }
+  return (list1);
 }
 
-List	*sort_copy(List *list, int (*f)(void *, void *))
+List	*unique(List *list)
 {
-  List	*new;
-
-  new = new_list_by_copy(list);
-  sort(new, f);
-  return (new);
-}
-
-List	*iterate_copy(List *list, void (*f)(void *))
-{
-  List	*new;
-
-  new = new_list_by_copy(list);
-  iterate(new, f);
-  return (new);
-}
-
-List	*circular_copy(List *list)
-{
-  List	*new;
-
-  new = new_list_by_copy(list);
-  circular(new);
-  return (new);
-}
-
-List	*concat_copy(List *list1, List *list2)
-{
-  List	*new;
-
-  new = new_list_by_copy(list);
-  concat(new, list2);
-  return (new);
-}
-
-List	*unique_copy(List *list)
-{
-  List	*new;
-
-  new = new_list_by_copy(list);
-  unique(new);
-  return (new);
+  if (list != NULL) {
+  }
+  return (list);
 }
 
 static void	delete_link_list(Link *link, void (*f)(void *))
 {
-  if (link->next != NULL)
-    delete_link_list(link->next, f);
-  delete_link(link, f);
+  if (link != NULL) {
+    if (link->next != NULL)
+      delete_link_list(link->next, f);
+    delete_link(link, f);
+  }
 }
 
 void	delete_list(List *list, void (*f)(void *))
 {
+  list->head->prev = NULL;
+  list->tail->next = NULL;
   delete_link_list(list->head, f);
   free(list);
   list = NULL;
